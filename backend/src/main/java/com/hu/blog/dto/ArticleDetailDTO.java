@@ -5,6 +5,9 @@ import lombok.EqualsAndHashCode;
 
 import java.util.List;
 
+/**
+ * 文章详情传输对象（含正文内容和标签ID列表）
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class ArticleDetailDTO extends ArticleDTO {

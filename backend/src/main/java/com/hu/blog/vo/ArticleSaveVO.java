@@ -4,6 +4,9 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import java.util.List;
 
+/**
+ * 文章保存 VO
+ */
 @Data
 public class ArticleSaveVO {
     private Long id;

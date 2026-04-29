@@ -22,6 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * 文章服务实现类
+ */
 @Service
 @RequiredArgsConstructor
 public class ArticleServiceImpl implements ArticleService {
@@ -32,6 +35,9 @@ public class ArticleServiceImpl implements ArticleService {
     private final TagMapper tagMapper;
     private final StringRedisTemplate redisTemplate;
 
+    /**
+     * 分页查询已发布文章列表，支持关键词、分类、标签筛选
+     */
     @Override
     public Page<ArticleDTO> list(ArticleListVO vo) {
         Page<Article> page = new Page<>(vo.getPageNum(), vo.getPageSize());
@@ -122,6 +128,9 @@ public class ArticleServiceImpl implements ArticleService {
         return dtoPage;
     }
 
+    /**
+     * 获取文章详情，同时通过Redis累加浏览量
+     */
     @Override
     public ArticleDetailDTO detail(Long id) {
         Article article = articleMapper.selectById(id);
@@ -140,6 +149,9 @@ public class ArticleServiceImpl implements ArticleService {
         return dto;
     }
 
+    /**
+     * 获取所有置顶文章
+     */
     @Override
     public List<ArticleDTO> topArticles() {
         List<Article> articles = articleMapper.selectList(
@@ -150,11 +162,17 @@ public class ArticleServiceImpl implements ArticleService {
         return articles.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
+    /**
+     * 获取文章归档（按月份分组统计）
+     */
     @Override
     public List<Map<String, Object>> archive() {
         return articleMapper.selectArchiveList();
     }
 
+    /**
+     * 保存文章（新增或更新），同时维护文章标签关联
+     */
     @Override
     @Transactional
     public void save(ArticleSaveVO vo) {
@@ -177,11 +195,17 @@ public class ArticleServiceImpl implements ArticleService {
         }
     }
 
+    /**
+     * 逻辑删除文章
+     */
     @Override
     public void delete(Long id) {
         articleMapper.deleteById(id);
     }
 
+    /**
+     * 切换文章置顶状态
+     */
     @Override
     public void toggleTop(Long id) {
         Article article = articleMapper.selectById(id);

@@ -4,6 +4,9 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 文章传输对象（前台列表出参）
+ */
 @Data
 public class ArticleDTO {
     private Long id;

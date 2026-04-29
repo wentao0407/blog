@@ -17,6 +17,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 用户服务实现类
+ */
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -24,6 +27,9 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final StringRedisTemplate redisTemplate;
 
+    /**
+     * 用户登录，验证用户名密码并生成Token存入Redis
+     */
     @Override
     public Map<String, Object> login(LoginVO vo) {
         User user = userMapper.selectOne(
@@ -44,6 +50,9 @@ public class UserServiceImpl implements UserService {
         return result;
     }
 
+    /**
+     * 用户注册，校验用户名唯一性后创建用户
+     */
     @Override
     public void register(RegisterVO vo) {
         Long count = userMapper.selectCount(
@@ -59,6 +68,9 @@ public class UserServiceImpl implements UserService {
         userMapper.insert(user);
     }
 
+    /**
+     * 根据用户ID获取用户信息
+     */
     @Override
     public Map<String, Object> getUserInfo(Long userId) {
         User user = userMapper.selectById(userId);

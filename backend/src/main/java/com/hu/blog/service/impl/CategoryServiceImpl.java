@@ -10,17 +10,26 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * 分类服务实现类
+ */
 @Service
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryMapper categoryMapper;
 
+    /**
+     * 查询所有分类，按排序字段升序
+     */
     @Override
     public List<Category> list() {
         return categoryMapper.selectList(new LambdaQueryWrapper<Category>().orderByAsc(Category::getSort));
     }
 
+    /**
+     * 保存分类（新增或更新）
+     */
     @Override
     public void save(CategorySaveVO vo) {
         Category category = new Category();
@@ -34,6 +43,9 @@ public class CategoryServiceImpl implements CategoryService {
         }
     }
 
+    /**
+     * 逻辑删除分类
+     */
     @Override
     public void delete(Long id) {
         categoryMapper.deleteById(id);

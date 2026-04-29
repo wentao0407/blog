@@ -7,6 +7,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * 站点统计接口
+ */
 @RestController
 @RequestMapping("/api/site")
 @RequiredArgsConstructor

@@ -2,6 +2,9 @@ package com.hu.blog.common;
 
 import lombok.Data;
 
+/**
+ * 统一响应封装
+ */
 @Data
 public class Result<T> {
     private int code;

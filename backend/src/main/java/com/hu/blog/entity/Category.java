@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * 分类实体
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @TableName("t_category")

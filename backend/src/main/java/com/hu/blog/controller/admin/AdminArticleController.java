@@ -8,6 +8,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * 管理端-文章管理接口
+ */
 @RestController
 @RequestMapping("/api/admin/article")
 @RequiredArgsConstructor

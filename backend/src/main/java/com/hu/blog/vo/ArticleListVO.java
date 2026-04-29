@@ -2,6 +2,9 @@ package com.hu.blog.vo;
 
 import lombok.Data;
 
+/**
+ * 文章列表查询 VO
+ */
 @Data
 public class ArticleListVO {
     private Integer pageNum = 1;

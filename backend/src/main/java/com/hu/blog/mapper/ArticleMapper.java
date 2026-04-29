@@ -8,6 +8,9 @@ import org.apache.ibatis.annotations.Select;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 文章 Mapper
+ */
 public interface ArticleMapper extends BaseMapper<Article> {
 
     @Select("SELECT DATE_FORMAT(create_time, '%Y-%m') AS month, COUNT(*) AS count " +

@@ -7,6 +7,9 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+/**
+ * 认证拦截器，校验Token并鉴权管理后台接口
+ */
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
 

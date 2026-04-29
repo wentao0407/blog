@@ -13,6 +13,9 @@ import org.springframework.stereotype.Component;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * 访问量同步定时任务，定期将Redis中的浏览量增量写回数据库
+ */
 @Slf4j
 @Component
 @EnableScheduling

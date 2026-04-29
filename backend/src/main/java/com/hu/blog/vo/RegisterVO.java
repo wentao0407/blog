@@ -4,6 +4,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+/**
+ * 注册请求 VO
+ */
 @Data
 public class RegisterVO {
     @NotBlank(message = "用户名不能为空")

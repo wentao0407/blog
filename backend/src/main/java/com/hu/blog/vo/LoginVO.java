@@ -3,6 +3,9 @@ package com.hu.blog.vo;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+/**
+ * 登录请求 VO
+ */
 @Data
 public class LoginVO {
     @NotBlank(message = "用户名不能为空")
