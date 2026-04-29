@@ -76,4 +76,4 @@ CREATE TABLE t_comment (
 
 -- 插入管理员账号 (密码: Fvjm0918!)
 INSERT INTO t_user (username, password, nickname, role)
-VALUES ('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', '胡先生', 1);
+VALUES ('admin', '$2b$10$iKYqwXkyL/LELy72qNu.2OVw8qTCGLdAS1zFBeILllMxRca3vyxbS', '胡先生', 1);
