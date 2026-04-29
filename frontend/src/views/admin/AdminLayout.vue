@@ -24,6 +24,9 @@
           <span>评论管理</span>
         </el-menu-item>
       </el-menu>
+      <div class="logout-btn">
+        <el-button type="danger" text @click="handleLogout">退出登录</el-button>
+      </div>
     </el-aside>
     <el-main>
       <router-view />
@@ -31,7 +34,27 @@
   </el-container>
 </template>
 
+<script setup>
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+const handleLogout = () => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('userId')
+  localStorage.removeItem('nickname')
+  localStorage.removeItem('role')
+  router.push('/login')
+}
+</script>
+
 <style scoped>
 .admin-layout { height: 100vh; }
 .logo { padding: 20px; font-size: 18px; font-weight: 700; color: #5c4033; text-align: center; border-bottom: 1px solid #eee; }
+.el-aside { position: relative; }
+.logout-btn {
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+  text-align: center;
+}
 </style>

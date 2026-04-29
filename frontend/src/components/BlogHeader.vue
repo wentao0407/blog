@@ -6,7 +6,8 @@
         <router-link to="/">首页</router-link>
         <router-link to="/archive">归档</router-link>
         <router-link to="/about">关于</router-link>
-        <router-link to="/login">登录</router-link>
+        <router-link v-if="!isLoggedIn" to="/login">登录</router-link>
+        <a v-else @click="handleLogout" class="logout-link">退出</a>
       </nav>
       <div class="search">
         <input v-model="keyword" placeholder="搜索文章..." @keyup.enter="search" />
@@ -21,10 +22,19 @@ import { useRouter } from 'vue-router'
 
 const keyword = ref('')
 const router = useRouter()
+const isLoggedIn = ref(!!localStorage.getItem('token'))
 const search = () => {
   if (keyword.value.trim()) {
     router.push({ path: '/search', query: { q: keyword.value } })
   }
+}
+const handleLogout = () => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('userId')
+  localStorage.removeItem('nickname')
+  localStorage.removeItem('role')
+  isLoggedIn.value = false
+  router.push('/')
 }
 </script>
 
@@ -73,5 +83,14 @@ const search = () => {
   font-size: 14px;
   outline: none;
   background: #f9f6f2;
+}
+.logout-link {
+  color: #8b7355;
+  text-decoration: none;
+  font-size: 15px;
+  cursor: pointer;
+}
+.logout-link:hover {
+  color: #5c4033;
 }
 </style>

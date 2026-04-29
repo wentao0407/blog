@@ -48,3 +48,6 @@ const handleDelete = async (id) => {
 
 onMounted(loadComments)
 </script>
+
+<style scoped>
+</style>
