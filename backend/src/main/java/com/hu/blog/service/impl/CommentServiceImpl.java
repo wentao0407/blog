@@ -12,6 +12,7 @@ import com.hu.blog.service.CommentService;
 import com.hu.blog.vo.CommentAddVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -79,6 +80,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void delete(Long id) {
         // 递归收集所有子评论ID，级联删除
         List<Long> idsToDelete = new ArrayList<>();

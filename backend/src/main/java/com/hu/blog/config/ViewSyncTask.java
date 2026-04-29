@@ -10,6 +10,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -42,17 +45,20 @@ public class ViewSyncTask {
 
         if (keys.isEmpty()) return;
 
+        // Lua脚本：原子读取并重置key，避免竞态条件丢失访问量
+        DefaultRedisScript<Long> script = new DefaultRedisScript<>(
+                "local v = redis.call('GET', KEYS[1]) " +
+                "if v then redis.call('SET', KEYS[1], '0') end " +
+                "return v", Long.class);
+
         for (String key : keys) {
             try {
                 Long articleId = Long.parseLong(key.replace("article:view:", ""));
-                String val = redisTemplate.opsForValue().get(key);
-                if (val == null) continue;
-                int increment = Integer.parseInt(val);
-                if (increment > 0) {
+                Long increment = redisTemplate.execute(script, Collections.singletonList(key));
+                if (increment != null && increment > 0) {
                     articleMapper.update(null, new LambdaQueryWrapper<Article>()
                             .eq(Article::getId, articleId)
                             .setSql("view_count = view_count + " + increment));
-                    redisTemplate.delete(key);
                 }
             } catch (Exception e) {
                 log.error("同步访问量失败: key={}", key, e);

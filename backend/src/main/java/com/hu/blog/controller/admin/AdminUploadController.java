@@ -9,9 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * 管理端-图片上传控制器
@@ -26,6 +24,8 @@ public class AdminUploadController {
     @Value("${upload.url-prefix:http://localhost:8080/uploads}")
     private String urlPrefix;
 
+    private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp");
+
     /**
      * 上传图片
      *
@@ -39,7 +39,7 @@ public class AdminUploadController {
         }
         String originalName = file.getOriginalFilename();
         String ext = FileUtil.extName(originalName);
-        if (!"jpg,jpeg,png,gif,webp".contains(ext.toLowerCase())) {
+        if (!ALLOWED_EXTENSIONS.contains(ext.toLowerCase())) {
             throw new BusinessException("仅支持图片格式");
         }
         String fileName = UUID.randomUUID().toString().replace("-", "") + "." + ext;
