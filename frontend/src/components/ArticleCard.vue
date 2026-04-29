@@ -22,7 +22,12 @@
 </template>
 
 <script setup>
-defineProps({ article: Object })
+defineProps({
+  article: {
+    type: Object,
+    required: true
+  }
+})
 const formatDate = (d) => d ? d.substring(0, 10) : ''
 </script>
 

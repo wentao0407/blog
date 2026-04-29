@@ -6,15 +6,20 @@
       <button @click="insert('`', '`')">&lt;/&gt;</button>
       <button @click="insert('[', '](url)')">Link</button>
     </div>
-    <textarea :value="modelValue" @input="$emit('update:modelValue', $event.target.value)" placeholder="输入 Markdown 内容..."></textarea>
+    <textarea ref="textareaRef" :value="modelValue" @input="$emit('update:modelValue', $event.target.value)" placeholder="输入 Markdown 内容..."></textarea>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue'
+
 defineProps({ modelValue: String })
 defineEmits(['update:modelValue'])
+
+const textareaRef = ref(null)
+
 const insert = (before, after = '') => {
-  const el = document.querySelector('.md-editor textarea')
+  const el = textareaRef.value
   const start = el.selectionStart
   const end = el.selectionEnd
   const text = el.value
