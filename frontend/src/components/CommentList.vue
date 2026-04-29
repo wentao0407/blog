@@ -27,7 +27,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getCommentList, addComment } from '../../api/comment'
+import { getCommentList, addComment } from '../api/comment'
 import { ElMessage } from 'element-plus'
 
 const props = defineProps({ articleId: Number })
