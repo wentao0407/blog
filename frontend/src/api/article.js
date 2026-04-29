@@ -6,3 +6,8 @@ export const getArchiveList = () => request.post('/article/archive')
 export const saveArticle = (data) => request.post('/admin/article/save', data)
 export const deleteArticle = (id) => request.post('/admin/article/delete', { id })
 export const toggleTopArticle = (id) => request.post('/admin/article/top', { id })
+export const uploadImage = (file) => {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request.post('/admin/upload/image', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+}

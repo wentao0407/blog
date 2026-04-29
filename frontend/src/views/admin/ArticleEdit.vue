@@ -9,7 +9,19 @@
         <el-input v-model="form.summary" type="textarea" :rows="2" placeholder="文章摘要" />
       </el-form-item>
       <el-form-item label="封面图">
-        <el-input v-model="form.coverImage" placeholder="封面图URL" />
+        <el-upload
+          class="cover-uploader"
+          :show-file-list="false"
+          :before-upload="beforeCoverUpload"
+          :http-request="handleCoverUpload"
+        >
+          <img v-if="form.coverImage" :src="form.coverImage" class="cover-preview" />
+          <div v-else class="cover-placeholder">
+            <el-icon size="28"><Plus /></el-icon>
+            <span>点击上传封面图</span>
+          </div>
+        </el-upload>
+        <el-button v-if="form.coverImage" size="small" type="danger" text @click="form.coverImage = ''" style="margin-top: 8px;">移除</el-button>
       </el-form-item>
       <el-form-item label="分类">
         <el-select v-model="form.categoryId" placeholder="选择分类">
@@ -36,10 +48,11 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getArticleDetail, saveArticle } from '../../api/article'
+import { getArticleDetail, saveArticle, uploadImage } from '../../api/article'
 import { getCategoryList } from '../../api/category'
 import { getTagList } from '../../api/tag'
 import { ElMessage } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
 import MarkdownEditor from '../../components/MarkdownEditor.vue'
 
 const route = useRoute()
@@ -61,6 +74,24 @@ const handleSubmit = async (status) => {
   router.push('/admin/article')
 }
 
+const beforeCoverUpload = (file) => {
+  const isImage = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)
+  const isLt5M = file.size / 1024 / 1024 < 5
+  if (!isImage) ElMessage.error('仅支持 JPG/PNG/GIF/WEBP 格式')
+  if (!isLt5M) ElMessage.error('图片大小不能超过 5MB')
+  return isImage && isLt5M
+}
+
+const handleCoverUpload = async (options) => {
+  try {
+    const data = await uploadImage(options.file)
+    form.value.coverImage = data.url
+    ElMessage.success('封面图上传成功')
+  } catch (e) {
+    ElMessage.error('上传失败')
+  }
+}
+
 onMounted(async () => {
   categories.value = await getCategoryList()
   tags.value = await getTagList()
@@ -80,3 +111,34 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+.cover-uploader :deep(.el-upload) {
+  border: 1px dashed #d9d9d9;
+  border-radius: 8px;
+  cursor: pointer;
+  overflow: hidden;
+  width: 320px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cover-uploader :deep(.el-upload:hover) {
+  border-color: #5c4033;
+}
+.cover-preview {
+  width: 320px;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+}
+.cover-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #8c939d;
+  font-size: 14px;
+}
+</style>
