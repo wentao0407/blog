@@ -2,6 +2,7 @@ package com.hu.blog.controller.admin;
 
 import com.hu.blog.common.Result;
 import com.hu.blog.service.CommentService;
+import com.hu.blog.vo.CommentListVO;
 import com.hu.blog.vo.IdVO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +23,8 @@ public class AdminCommentController {
      * 分页查询评论列表
      */
     @PostMapping("/list")
-    public Result<Map<String, Object>> list(@RequestBody Map<String, Object> params) {
-        Long articleId = params.get("articleId") != null ? Long.valueOf(params.get("articleId").toString()) : null;
-        Integer pageNum = params.get("pageNum") != null ? Integer.valueOf(params.get("pageNum").toString()) : 1;
-        Integer pageSize = params.get("pageSize") != null ? Integer.valueOf(params.get("pageSize").toString()) : 10;
-        return Result.success(commentService.adminList(articleId, pageNum, pageSize));
+    public Result<Map<String, Object>> list(@Valid @RequestBody CommentListVO vo) {
+        return Result.success(commentService.adminList(vo.getArticleId(), vo.getPageNum(), vo.getPageSize()));
     }
 
     /**

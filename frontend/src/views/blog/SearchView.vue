@@ -8,7 +8,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { getArticleList } from '../../api/article'
 import ArticleCard from '../../components/ArticleCard.vue'
@@ -36,8 +36,8 @@ const loadMore = async () => {
   hasMore.value = data.records.length === 10
 }
 
-onMounted(doSearch)
-watch(() => route.query.q, doSearch)
+// watch 会在挂载时自动触发一次，无需 onMounted
+watch(() => route.query.q, doSearch, { immediate: true })
 </script>
 
 <style scoped>

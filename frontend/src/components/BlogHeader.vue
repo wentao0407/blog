@@ -17,12 +17,18 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
 const keyword = ref('')
 const router = useRouter()
+const route = useRoute()
 const isLoggedIn = ref(!!localStorage.getItem('token'))
+
+// 路由变化时重新检查登录状态（登录/登出后跳转会触发）
+watch(() => route.path, () => {
+  isLoggedIn.value = !!localStorage.getItem('token')
+})
 const search = () => {
   if (keyword.value.trim()) {
     router.push({ path: '/search', query: { q: keyword.value } })

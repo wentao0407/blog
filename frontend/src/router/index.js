@@ -28,7 +28,8 @@ const routes = [
       { path: 'tag', name: 'AdminTag', component: () => import('../views/admin/TagManage.vue') },
       { path: 'comment', name: 'AdminComment', component: () => import('../views/admin/CommentManage.vue') }
     ]
-  }
+  },
+  { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('../views/blog/NotFound.vue') }
 ]
 
 const router = createRouter({

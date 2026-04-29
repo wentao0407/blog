@@ -109,23 +109,26 @@ public class CommentServiceImpl implements CommentService {
         if (articleId != null) wrapper.eq(Comment::getArticleId, articleId);
         wrapper.orderByDesc(Comment::getCreateTime);
         Page<Comment> page = commentMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
+
+        // 批量加载用户头像，避免N+1查询
+        List<Comment> comments = page.getRecords();
+        Set<Long> userIds = comments.stream().map(Comment::getUserId).filter(Objects::nonNull).collect(Collectors.toSet());
+        Map<Long, String> avatarMap = new HashMap<>();
+        if (!userIds.isEmpty()) {
+            userMapper.selectBatchIds(userIds).forEach(u -> avatarMap.put(u.getId(), u.getAvatar()));
+        }
+
+        List<CommentDTO> dtoList = comments.stream().map(comment -> {
+            CommentDTO dto = new CommentDTO();
+            BeanUtil.copyProperties(comment, dto);
+            dto.setAvatar(avatarMap.get(comment.getUserId()));
+            return dto;
+        }).collect(Collectors.toList());
+
         Map<String, Object> result = new HashMap<>();
-        result.put("records", page.getRecords().stream().map(this::toDTO).collect(Collectors.toList()));
+        result.put("records", dtoList);
         result.put("total", page.getTotal());
         return result;
     }
 
-    /**
-     * 评论实体转DTO，附带头像信息
-     */
-    private CommentDTO toDTO(Comment comment) {
-        CommentDTO dto = new CommentDTO();
-        BeanUtil.copyProperties(comment, dto);
-        // 查询用户头像
-        if (comment.getUserId() != null) {
-            User user = userMapper.selectById(comment.getUserId());
-            if (user != null) dto.setAvatar(user.getAvatar());
-        }
-        return dto;
-    }
 }

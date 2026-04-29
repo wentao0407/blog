@@ -13,8 +13,6 @@ public class CommentAddVO {
     /** 文章ID */
     @NotNull(message = "文章ID不能为空")
     private Long articleId;
-    /** 用户ID（可为空，匿名评论） */
-    private Long userId;
     /** 昵称 */
     @NotBlank(message = "昵称不能为空")
     @Size(max = 50, message = "昵称不能超过50字")
