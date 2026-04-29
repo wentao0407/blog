@@ -20,10 +20,13 @@ const hasMore = ref(true)
 
 const loadArticles = async () => {
   const data = await getArticleList({ pageNum: pageNum.value, pageSize: 10 })
+  const topIds = new Set(topArticles.value.map(a => a.id))
+  // 排除已在置顶区展示的文章
+  const filtered = data.records.filter(a => !topIds.has(a.id))
   if (pageNum.value === 1) {
-    articles.value = data.records
+    articles.value = filtered
   } else {
-    articles.value.push(...data.records)
+    articles.value.push(...filtered)
   }
   hasMore.value = data.records.length === 10
 }
