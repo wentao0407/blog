@@ -27,6 +27,16 @@ public class AuthInterceptor implements HandlerInterceptor {
             throw new BusinessException(401, "登录已过期");
         }
         request.setAttribute("userId", Long.parseLong(userId));
+
+        // 管理后台接口校验用户角色，防止普通用户越权访问
+        String uri = request.getRequestURI();
+        if (uri.startsWith("/api/admin/")) {
+            String roleStr = redisTemplate.opsForValue().get("user:role:" + token);
+            if (roleStr == null || !roleStr.equals("1")) {
+                throw new BusinessException(403, "无权限");
+            }
+        }
+
         return true;
     }
 }

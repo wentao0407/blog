@@ -33,6 +33,7 @@ public class UserServiceImpl implements UserService {
         }
         String token = UUID.randomUUID().toString().replace("-", "");
         redisTemplate.opsForValue().set("user:token:" + token, user.getId().toString(), 7, TimeUnit.DAYS);
+        redisTemplate.opsForValue().set("user:role:" + token, user.getRole().toString(), 7, TimeUnit.DAYS);
 
         Map<String, Object> result = new HashMap<>();
         result.put("token", token);
