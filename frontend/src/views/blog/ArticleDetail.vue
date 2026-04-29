@@ -19,13 +19,14 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { getArticleDetail } from '../../api/article'
 import MarkdownIt from 'markdown-it'
+import DOMPurify from 'dompurify'
 import CommentList from '../../components/CommentList.vue'
 
 const route = useRoute()
 const article = ref(null)
 const md = new MarkdownIt()
 
-const renderedContent = computed(() => article.value ? md.render(article.value.content) : '')
+const renderedContent = computed(() => article.value ? DOMPurify.sanitize(md.render(article.value.content)) : '')
 const formatDate = (d) => d ? d.substring(0, 10) : ''
 
 onMounted(async () => {
