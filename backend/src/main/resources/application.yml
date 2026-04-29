@@ -26,3 +26,7 @@ mybatis-plus:
 logging:
   level:
     com.hu.blog: debug
+
+upload:
+  path: ./uploads
+  url-prefix: http://localhost:8080/uploads
