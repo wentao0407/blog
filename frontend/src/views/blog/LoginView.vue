@@ -37,6 +37,8 @@ const handleSubmit = async () => {
     if (!form.value.nickname) return ElMessage.warning('请填写昵称')
     await register(form.value)
     ElMessage.success('注册成功，请登录')
+    // 清空表单并切换到登录模式
+    form.value = { username: '', password: '', nickname: '' }
     isRegister.value = false
   } else {
     const data = await login(form.value)
