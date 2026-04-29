@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Slf4j
@@ -23,8 +24,20 @@ public class ViewSyncTask {
 
     @Scheduled(fixedRate = 300000) // 每5分钟
     public void syncViewCount() {
-        Set<String> keys = redisTemplate.keys("article:view:*");
-        if (keys == null || keys.isEmpty()) return;
+        Set<String> keys = new HashSet<>();
+        redisTemplate.execute((org.springframework.data.redis.core.RedisCallback<Void>) connection -> {
+            try (var cursor = connection.scan(
+                    org.springframework.data.redis.core.ScanOptions.scanOptions().match("article:view:*").count(100).build())) {
+                while (cursor.hasNext()) {
+                    keys.add(new String(cursor.next()));
+                }
+            } catch (Exception e) {
+                log.error("SCAN 扫描失败", e);
+            }
+            return null;
+        });
+
+        if (keys.isEmpty()) return;
 
         for (String key : keys) {
             try {
@@ -42,6 +55,6 @@ public class ViewSyncTask {
                 log.error("同步访问量失败: key={}", key, e);
             }
         }
-        log.info("访问量同步完成");
+        log.info("访问量同步完成，处理 {} 个key", keys.size());
     }
 }

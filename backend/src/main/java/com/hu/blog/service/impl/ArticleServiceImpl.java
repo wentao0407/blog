@@ -46,6 +46,19 @@ public class ArticleServiceImpl implements ArticleService {
         if (vo.getCategoryId() != null) {
             wrapper.eq(Article::getCategoryId, vo.getCategoryId());
         }
+        if (vo.getTagId() != null) {
+            // 根据标签ID查找关联的文章ID列表
+            List<ArticleTag> articleTags = articleTagMapper.selectList(
+                    new LambdaQueryWrapper<ArticleTag>().eq(ArticleTag::getTagId, vo.getTagId()));
+            List<Long> articleIds = articleTags.stream().map(ArticleTag::getArticleId).collect(Collectors.toList());
+            if (articleIds.isEmpty()) {
+                // 该标签下没有文章，返回空页
+                Page<ArticleDTO> emptyPage = new Page<>(vo.getPageNum(), vo.getPageSize(), 0);
+                emptyPage.setRecords(Collections.emptyList());
+                return emptyPage;
+            }
+            wrapper.in(Article::getId, articleIds);
+        }
 
         Page<Article> articlePage = articleMapper.selectPage(page, wrapper);
         Page<ArticleDTO> dtoPage = new Page<>(articlePage.getCurrent(), articlePage.getSize(), articlePage.getTotal());
@@ -64,6 +77,10 @@ public class ArticleServiceImpl implements ArticleService {
         ArticleDetailDTO dto = new ArticleDetailDTO();
         BeanUtil.copyProperties(toDTO(article), dto);
         dto.setContent(article.getContent());
+        // 回显文章关联的标签ID列表
+        List<ArticleTag> articleTags = articleTagMapper.selectList(
+                new LambdaQueryWrapper<ArticleTag>().eq(ArticleTag::getArticleId, article.getId()));
+        dto.setTagIds(articleTags.stream().map(ArticleTag::getTagId).collect(Collectors.toList()));
         return dto;
     }
 

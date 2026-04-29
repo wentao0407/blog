@@ -37,6 +37,7 @@ public class UserServiceImpl implements UserService {
 
         Map<String, Object> result = new HashMap<>();
         result.put("token", token);
+        result.put("id", user.getId());
         result.put("nickname", user.getNickname());
         result.put("avatar", user.getAvatar());
         result.put("role", user.getRole());
