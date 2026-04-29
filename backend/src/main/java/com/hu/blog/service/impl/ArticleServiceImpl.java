@@ -61,8 +61,64 @@ public class ArticleServiceImpl implements ArticleService {
         }
 
         Page<Article> articlePage = articleMapper.selectPage(page, wrapper);
+        List<Article> articles = articlePage.getRecords();
+
+        if (articles.isEmpty()) {
+            Page<ArticleDTO> dtoPage = new Page<>(articlePage.getCurrent(), articlePage.getSize(), 0);
+            dtoPage.setRecords(Collections.emptyList());
+            return dtoPage;
+        }
+
+        // 批量加载分类名称
+        Set<Long> categoryIds = articles.stream().map(Article::getCategoryId).filter(Objects::nonNull).collect(Collectors.toSet());
+        Map<Long, String> categoryMap = new HashMap<>();
+        if (!categoryIds.isEmpty()) {
+            categoryMapper.selectBatchIds(categoryIds).forEach(c -> categoryMap.put(c.getId(), c.getName()));
+        }
+
+        // 批量加载文章-标签关联
+        List<Long> allArticleIds = articles.stream().map(Article::getId).collect(Collectors.toList());
+        List<ArticleTag> allTags = articleTagMapper.selectList(
+                new LambdaQueryWrapper<ArticleTag>().in(ArticleTag::getArticleId, allArticleIds));
+        Map<Long, List<Long>> articleTagMap = allTags.stream().collect(
+                Collectors.groupingBy(ArticleTag::getArticleId, Collectors.mapping(ArticleTag::getTagId, Collectors.toList())));
+
+        // 批量加载标签名称
+        Set<Long> allTagIds = allTags.stream().map(ArticleTag::getTagId).collect(Collectors.toSet());
+        Map<Long, String> tagNameMap = new HashMap<>();
+        if (!allTagIds.isEmpty()) {
+            tagMapper.selectBatchIds(allTagIds).forEach(t -> tagNameMap.put(t.getId(), t.getName()));
+        }
+
+        // 批量加载Redis浏览量
+        List<String> viewKeys = allArticleIds.stream().map(id -> "article:view:" + id).collect(Collectors.toList());
+        List<String> viewValues = redisTemplate.opsForValue().multiGet(viewKeys);
+        Map<Long, Integer> redisViewMap = new HashMap<>();
+        for (int i = 0; i < allArticleIds.size(); i++) {
+            String val = viewValues != null ? viewValues.get(i) : null;
+            if (val != null) {
+                redisViewMap.put(allArticleIds.get(i), Integer.parseInt(val));
+            }
+        }
+
+        // 组装DTO
+        List<ArticleDTO> dtos = articles.stream().map(article -> {
+            ArticleDTO dto = new ArticleDTO();
+            BeanUtil.copyProperties(article, dto);
+            dto.setCategoryName(categoryMap.get(article.getCategoryId()));
+            List<Long> tagIds = articleTagMap.get(article.getId());
+            if (tagIds != null && !tagIds.isEmpty()) {
+                dto.setTagNames(tagIds.stream().map(tagNameMap::get).filter(Objects::nonNull).collect(Collectors.toList()));
+            }
+            Integer redisViews = redisViewMap.get(article.getId());
+            if (redisViews != null) {
+                dto.setViewCount(article.getViewCount() + redisViews);
+            }
+            return dto;
+        }).collect(Collectors.toList());
+
         Page<ArticleDTO> dtoPage = new Page<>(articlePage.getCurrent(), articlePage.getSize(), articlePage.getTotal());
-        dtoPage.setRecords(articlePage.getRecords().stream().map(this::toDTO).collect(Collectors.toList()));
+        dtoPage.setRecords(dtos);
         return dtoPage;
     }
 

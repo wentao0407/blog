@@ -34,16 +34,28 @@ public class CommentServiceImpl implements CommentService {
                         .eq(Comment::getArticleId, articleId)
                         .orderByDesc(Comment::getCreateTime));
 
-        // 转换为DTO并构建树形结构
-        List<CommentDTO> all = comments.stream().map(this::toDTO).collect(Collectors.toList());
+        // 批量加载用户头像，避免N+1查询
+        Set<Long> userIds = comments.stream().map(Comment::getUserId).filter(Objects::nonNull).collect(Collectors.toSet());
+        Map<Long, String> avatarMap = new HashMap<>();
+        if (!userIds.isEmpty()) {
+            userMapper.selectBatchIds(userIds).forEach(u -> avatarMap.put(u.getId(), u.getAvatar()));
+        }
+
+        // 转换为DTO
+        List<CommentDTO> all = comments.stream().map(comment -> {
+            CommentDTO dto = new CommentDTO();
+            BeanUtil.copyProperties(comment, dto);
+            dto.setAvatar(avatarMap.get(comment.getUserId()));
+            return dto;
+        }).collect(Collectors.toList());
+
+        // 构建树形结构
         Map<Long, CommentDTO> map = all.stream().collect(Collectors.toMap(CommentDTO::getId, c -> c));
         List<CommentDTO> roots = new ArrayList<>();
         for (CommentDTO dto : all) {
             if (dto.getParentId() == null || dto.getParentId() == 0) {
-                // 顶级评论
                 roots.add(dto);
             } else {
-                // 子评论挂到父评论下
                 CommentDTO parent = map.get(dto.getParentId());
                 if (parent != null) {
                     if (parent.getChildren() == null) parent.setChildren(new ArrayList<>());
@@ -68,7 +80,25 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public void delete(Long id) {
-        commentMapper.deleteById(id);
+        // 递归收集所有子评论ID，级联删除
+        List<Long> idsToDelete = new ArrayList<>();
+        idsToDelete.add(id);
+        collectChildIds(id, idsToDelete);
+        for (Long cid : idsToDelete) {
+            commentMapper.deleteById(cid);
+        }
+    }
+
+    /**
+     * 递归收集子评论ID
+     */
+    private void collectChildIds(Long parentId, List<Long> ids) {
+        List<Comment> children = commentMapper.selectList(
+                new LambdaQueryWrapper<Comment>().eq(Comment::getParentId, parentId));
+        for (Comment child : children) {
+            ids.add(child.getId());
+            collectChildIds(child.getId(), ids);
+        }
     }
 
     @Override
