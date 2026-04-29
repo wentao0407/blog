@@ -144,6 +144,7 @@ public class ArticleServiceImpl implements ArticleService {
         List<ArticleDTO> dtos = batchToDTO(List.of(article));
         ArticleDetailDTO dto = new ArticleDetailDTO();
         BeanUtil.copyProperties(dtos.get(0), dto);
+        dto.setCategoryId(article.getCategoryId());
         dto.setContent(article.getContent());
         // 回显文章关联的标签ID列表
         List<ArticleTag> articleTags = articleTagMapper.selectList(

@@ -11,6 +11,7 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class ArticleDetailDTO extends ArticleDTO {
+    private Long categoryId;
     private String content;
     private List<Long> tagIds;
 }
