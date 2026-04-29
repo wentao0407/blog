@@ -22,7 +22,7 @@
         </el-select>
       </el-form-item>
       <el-form-item label="内容">
-        <el-input v-model="form.content" type="textarea" :rows="15" placeholder="Markdown 内容" />
+        <MarkdownEditor v-model="form.content" style="width: 100%; border: 1px solid #dcdfe6; border-radius: 4px;" />
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="handleSubmit(1)">发布</el-button>
@@ -40,6 +40,7 @@ import { getArticleDetail, saveArticle } from '../../api/article'
 import { getCategoryList } from '../../api/category'
 import { getTagList } from '../../api/tag'
 import { ElMessage } from 'element-plus'
+import MarkdownEditor from '../../components/MarkdownEditor.vue'
 
 const route = useRoute()
 const router = useRouter()

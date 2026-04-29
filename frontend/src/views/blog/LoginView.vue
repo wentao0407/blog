@@ -11,7 +11,7 @@
       <div class="form-item" v-if="isRegister">
         <input v-model="form.nickname" placeholder="昵称" />
       </div>
-      <button @click="handleSubmit">{{ isRegister ? '注册' : '登录' }}</button>
+      <button @click="handleSubmit" :disabled="loading">{{ loading ? '提交中...' : (isRegister ? '注册' : '登录') }}</button>
       <p class="toggle" @click="isRegister = !isRegister">
         {{ isRegister ? '已有账号？去登录' : '没有账号？去注册' }}
       </p>
@@ -28,30 +28,35 @@ import { ElMessage } from 'element-plus'
 const router = useRouter()
 const isRegister = ref(false)
 const form = ref({ username: '', password: '', nickname: '' })
+const loading = ref(false)
 
 const handleSubmit = async () => {
   if (!form.value.username || !form.value.password) {
     return ElMessage.warning('请填写用户名和密码')
   }
-  if (isRegister.value) {
-    if (!form.value.nickname) return ElMessage.warning('请填写昵称')
-    await register(form.value)
-    ElMessage.success('注册成功，请登录')
-    // 清空表单并切换到登录模式
-    form.value = { username: '', password: '', nickname: '' }
-    isRegister.value = false
-  } else {
-    const data = await login(form.value)
-    localStorage.setItem('token', data.token)
-    localStorage.setItem('userId', data.id)
-    localStorage.setItem('nickname', data.nickname)
-    localStorage.setItem('role', data.role)
-    ElMessage.success('登录成功')
-    if (data.role === 1) {
-      router.push('/admin')
+  loading.value = true
+  try {
+    if (isRegister.value) {
+      if (!form.value.nickname) { ElMessage.warning('请填写昵称'); return }
+      await register(form.value)
+      ElMessage.success('注册成功，请登录')
+      form.value = { username: '', password: '', nickname: '' }
+      isRegister.value = false
     } else {
-      router.push('/')
+      const data = await login(form.value)
+      localStorage.setItem('token', data.token)
+      localStorage.setItem('userId', data.id)
+      localStorage.setItem('nickname', data.nickname)
+      localStorage.setItem('role', data.role)
+      ElMessage.success('登录成功')
+      if (data.role === 1) {
+        router.push('/admin')
+      } else {
+        router.push('/')
+      }
     }
+  } finally {
+    loading.value = false
   }
 }
 </script>
@@ -85,6 +90,10 @@ button {
   border-radius: 8px;
   font-size: 16px;
   cursor: pointer;
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 .toggle { text-align: center; color: #8b7355; font-size: 14px; cursor: pointer; margin-top: 16px; }
 </style>

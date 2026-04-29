@@ -159,15 +159,37 @@ public class ArticleServiceImpl implements ArticleService {
                         .eq(Article::getStatus, 1)
                         .eq(Article::getIsTop, 1)
                         .orderByDesc(Article::getCreateTime));
-        return articles.stream().map(this::toDTO).collect(Collectors.toList());
+        if (articles.isEmpty()) return Collections.emptyList();
+        return batchToDTO(articles);
     }
 
     /**
-     * 获取文章归档（按月份分组统计）
+     * 获取文章归档（按月份分组，含文章列表）
      */
     @Override
     public List<Map<String, Object>> archive() {
-        return articleMapper.selectArchiveList();
+        List<Article> articles = articleMapper.selectList(
+                new LambdaQueryWrapper<Article>()
+                        .eq(Article::getStatus, 1)
+                        .orderByDesc(Article::getCreateTime));
+        // 按月份分组
+        Map<String, List<Article>> grouped = articles.stream().collect(
+                Collectors.groupingBy(a -> a.getCreateTime().substring(0, 7), LinkedHashMap::new, Collectors.toList()));
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map.Entry<String, List<Article>> entry : grouped.entrySet()) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("month", entry.getKey());
+            item.put("count", entry.getValue().size());
+            item.put("articles", entry.getValue().stream().map(a -> {
+                Map<String, Object> m = new HashMap<>();
+                m.put("id", a.getId());
+                m.put("title", a.getTitle());
+                m.put("createTime", a.getCreateTime());
+                return m;
+            }).collect(Collectors.toList()));
+            result.add(item);
+        }
+        return result;
     }
 
     /**
@@ -214,25 +236,57 @@ public class ArticleServiceImpl implements ArticleService {
         articleMapper.updateById(article);
     }
 
-    private ArticleDTO toDTO(Article article) {
-        ArticleDTO dto = new ArticleDTO();
-        BeanUtil.copyProperties(article, dto);
-        if (article.getCategoryId() != null) {
-            Category category = categoryMapper.selectById(article.getCategoryId());
-            if (category != null) dto.setCategoryName(category.getName());
+    /**
+     * 批量将文章实体转为DTO，避免N+1查询
+     */
+    private List<ArticleDTO> batchToDTO(List<Article> articles) {
+        List<Long> articleIds = articles.stream().map(Article::getId).collect(Collectors.toList());
+
+        // 批量加载分类
+        Set<Long> categoryIds = articles.stream().map(Article::getCategoryId).filter(Objects::nonNull).collect(Collectors.toSet());
+        Map<Long, String> categoryMap = new HashMap<>();
+        if (!categoryIds.isEmpty()) {
+            categoryMapper.selectBatchIds(categoryIds).forEach(c -> categoryMap.put(c.getId(), c.getName()));
         }
-        List<ArticleTag> ats = articleTagMapper.selectList(
-                new LambdaQueryWrapper<ArticleTag>().eq(ArticleTag::getArticleId, article.getId()));
-        if (!ats.isEmpty()) {
-            List<Long> tagIds = ats.stream().map(ArticleTag::getTagId).collect(Collectors.toList());
-            List<String> tagNames = tagMapper.selectBatchIds(tagIds).stream()
-                    .map(Tag::getName).collect(Collectors.toList());
-            dto.setTagNames(tagNames);
+
+        // 批量加载标签关联
+        List<ArticleTag> allTags = articleTagMapper.selectList(
+                new LambdaQueryWrapper<ArticleTag>().in(ArticleTag::getArticleId, articleIds));
+        Map<Long, List<Long>> articleTagMap = allTags.stream().collect(
+                Collectors.groupingBy(ArticleTag::getArticleId, Collectors.mapping(ArticleTag::getTagId, Collectors.toList())));
+
+        // 批量加载标签名称
+        Set<Long> allTagIds = allTags.stream().map(ArticleTag::getTagId).collect(Collectors.toSet());
+        Map<Long, String> tagNameMap = new HashMap<>();
+        if (!allTagIds.isEmpty()) {
+            tagMapper.selectBatchIds(allTagIds).forEach(t -> tagNameMap.put(t.getId(), t.getName()));
         }
-        String viewStr = redisTemplate.opsForValue().get("article:view:" + article.getId());
-        if (viewStr != null) {
-            dto.setViewCount(article.getViewCount() + Integer.parseInt(viewStr));
+
+        // 批量加载Redis浏览量
+        List<String> viewKeys = articleIds.stream().map(id -> "article:view:" + id).collect(Collectors.toList());
+        List<String> viewValues = redisTemplate.opsForValue().multiGet(viewKeys);
+        Map<Long, Integer> redisViewMap = new HashMap<>();
+        for (int i = 0; i < articleIds.size(); i++) {
+            String val = viewValues != null ? viewValues.get(i) : null;
+            if (val != null) {
+                redisViewMap.put(articleIds.get(i), Integer.parseInt(val));
+            }
         }
-        return dto;
+
+        // 组装DTO
+        return articles.stream().map(article -> {
+            ArticleDTO dto = new ArticleDTO();
+            BeanUtil.copyProperties(article, dto);
+            dto.setCategoryName(categoryMap.get(article.getCategoryId()));
+            List<Long> tagIds = articleTagMap.get(article.getId());
+            if (tagIds != null && !tagIds.isEmpty()) {
+                dto.setTagNames(tagIds.stream().map(tagNameMap::get).filter(Objects::nonNull).collect(Collectors.toList()));
+            }
+            Integer redisViews = redisViewMap.get(article.getId());
+            if (redisViews != null) {
+                dto.setViewCount(article.getViewCount() + redisViews);
+            }
+            return dto;
+        }).collect(Collectors.toList());
     }
 }

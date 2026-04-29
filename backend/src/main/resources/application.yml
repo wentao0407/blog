@@ -32,5 +32,5 @@ logging:
     com.hu.blog: debug
 
 upload:
-  path: ./uploads
+  path: ${user.home}/blog-uploads
   url-prefix: http://localhost:8080/uploads

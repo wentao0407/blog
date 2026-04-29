@@ -37,7 +37,7 @@ const loadMore = () => {
 
 onMounted(async () => {
   const tags = await getTagList()
-  const tag = tags.find(t => t.id == route.params.id)
+  const tag = tags.find(t => t.id === Number(route.params.id))
   tagName.value = tag ? tag.name : ''
   await loadArticles()
 })

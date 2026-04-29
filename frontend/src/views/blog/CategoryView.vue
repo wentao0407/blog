@@ -37,7 +37,7 @@ const loadMore = () => {
 
 onMounted(async () => {
   const categories = await getCategoryList()
-  const cat = categories.find(c => c.id == route.params.id)
+  const cat = categories.find(c => c.id === Number(route.params.id))
   categoryName.value = cat ? cat.name : ''
   await loadArticles()
 })

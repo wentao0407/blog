@@ -46,7 +46,7 @@ const submitComment = async () => {
   if (!userId && !form.value.nickname.trim()) return ElMessage.warning('请输入昵称')
   await addComment({
     articleId: props.articleId,
-    nickname: form.value.nickname || '匿名用户',
+    nickname: userId ? (localStorage.getItem('nickname') || '用户') : (form.value.nickname || '匿名用户'),
     content: form.value.content
   })
   form.value.content = ''
