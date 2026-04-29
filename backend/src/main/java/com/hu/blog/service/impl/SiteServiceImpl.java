@@ -1,6 +1,7 @@
 package com.hu.blog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.hu.blog.entity.Article;
 import com.hu.blog.entity.Comment;
 import com.hu.blog.mapper.ArticleMapper;
@@ -31,8 +32,8 @@ public class SiteServiceImpl implements SiteService {
 
         // Use SQL SUM for total views instead of loading all articles into memory
         Long dbViews = articleMapper.selectObjs(
-                new LambdaQueryWrapper<Article>()
-                        .eq(Article::getStatus, 1)
+                new QueryWrapper<Article>()
+                        .eq("status", 1)
                         .select("COALESCE(SUM(view_count), 0)")
                         .last("LIMIT 1"))
                 .stream().findFirst().map(v -> ((Number) v).longValue()).orElse(0L);

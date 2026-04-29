@@ -19,6 +19,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -139,8 +140,10 @@ public class ArticleServiceImpl implements ArticleService {
         }
         redisTemplate.opsForValue().increment("article:view:" + id);
 
+        // 使用批量转换获取DTO信息
+        List<ArticleDTO> dtos = batchToDTO(List.of(article));
         ArticleDetailDTO dto = new ArticleDetailDTO();
-        BeanUtil.copyProperties(toDTO(article), dto);
+        BeanUtil.copyProperties(dtos.get(0), dto);
         dto.setContent(article.getContent());
         // 回显文章关联的标签ID列表
         List<ArticleTag> articleTags = articleTagMapper.selectList(
@@ -173,8 +176,9 @@ public class ArticleServiceImpl implements ArticleService {
                         .eq(Article::getStatus, 1)
                         .orderByDesc(Article::getCreateTime));
         // 按月份分组
+        DateTimeFormatter monthFmt = DateTimeFormatter.ofPattern("yyyy-MM");
         Map<String, List<Article>> grouped = articles.stream().collect(
-                Collectors.groupingBy(a -> a.getCreateTime().substring(0, 7), LinkedHashMap::new, Collectors.toList()));
+                Collectors.groupingBy(a -> a.getCreateTime().format(monthFmt), LinkedHashMap::new, Collectors.toList()));
         List<Map<String, Object>> result = new ArrayList<>();
         for (Map.Entry<String, List<Article>> entry : grouped.entrySet()) {
             Map<String, Object> item = new HashMap<>();

@@ -1,6 +1,7 @@
 package com.hu.blog.config;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.hu.blog.entity.Article;
 import com.hu.blog.mapper.ArticleMapper;
 import lombok.RequiredArgsConstructor;
@@ -56,7 +57,7 @@ public class ViewSyncTask {
                 Long articleId = Long.parseLong(key.replace("article:view:", ""));
                 Long increment = redisTemplate.execute(script, Collections.singletonList(key));
                 if (increment != null && increment > 0) {
-                    articleMapper.update(null, new LambdaQueryWrapper<Article>()
+                    articleMapper.update(null, new LambdaUpdateWrapper<Article>()
                             .eq(Article::getId, articleId)
                             .setSql("view_count = view_count + " + increment));
                 }
