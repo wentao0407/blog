@@ -2,6 +2,7 @@ package com.hu.blog.controller.admin;
 
 import com.hu.blog.common.Result;
 import com.hu.blog.service.TagService;
+import com.hu.blog.vo.IdVO;
 import com.hu.blog.vo.TagSaveVO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +21,8 @@ public class AdminTagController {
     }
 
     @PostMapping("/delete")
-    public Result<Void> delete(@RequestBody Long id) {
-        tagService.delete(id);
+    public Result<Void> delete(@Valid @RequestBody IdVO vo) {
+        tagService.delete(vo.getId());
         return Result.success();
     }
 }

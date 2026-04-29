@@ -3,6 +3,7 @@ package com.hu.blog.service;
 import com.hu.blog.dto.CommentDTO;
 import com.hu.blog.vo.CommentAddVO;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 评论服务接口
@@ -14,6 +15,6 @@ public interface CommentService {
     void add(CommentAddVO vo, Long userId);
     /** 删除评论 */
     void delete(Long id);
-    /** 管理端分页查询评论 */
-    List<CommentDTO> adminList(Long articleId, Integer pageNum, Integer pageSize);
+    /** 管理端分页查询评论（返回 records + total） */
+    Map<String, Object> adminList(Long articleId, Integer pageNum, Integer pageSize);
 }

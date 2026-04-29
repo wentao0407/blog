@@ -102,12 +102,15 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<CommentDTO> adminList(Long articleId, Integer pageNum, Integer pageSize) {
+    public Map<String, Object> adminList(Long articleId, Integer pageNum, Integer pageSize) {
         LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
         if (articleId != null) wrapper.eq(Comment::getArticleId, articleId);
         wrapper.orderByDesc(Comment::getCreateTime);
         Page<Comment> page = commentMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
-        return page.getRecords().stream().map(this::toDTO).collect(Collectors.toList());
+        Map<String, Object> result = new HashMap<>();
+        result.put("records", page.getRecords().stream().map(this::toDTO).collect(Collectors.toList()));
+        result.put("total", page.getTotal());
+        return result;
     }
 
     /**

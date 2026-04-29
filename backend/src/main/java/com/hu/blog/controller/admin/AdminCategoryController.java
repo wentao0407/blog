@@ -3,6 +3,7 @@ package com.hu.blog.controller.admin;
 import com.hu.blog.common.Result;
 import com.hu.blog.service.CategoryService;
 import com.hu.blog.vo.CategorySaveVO;
+import com.hu.blog.vo.IdVO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -20,8 +21,8 @@ public class AdminCategoryController {
     }
 
     @PostMapping("/delete")
-    public Result<Void> delete(@RequestBody Long id) {
-        categoryService.delete(id);
+    public Result<Void> delete(@Valid @RequestBody IdVO vo) {
+        categoryService.delete(vo.getId());
         return Result.success();
     }
 }

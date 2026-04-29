@@ -3,11 +3,10 @@ package com.hu.blog.controller.admin;
 import com.hu.blog.common.Result;
 import com.hu.blog.service.ArticleService;
 import com.hu.blog.vo.ArticleSaveVO;
+import com.hu.blog.vo.IdVO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/article")
@@ -22,14 +21,14 @@ public class AdminArticleController {
     }
 
     @PostMapping("/delete")
-    public Result<Void> delete(@RequestBody Map<String, Long> params) {
-        articleService.delete(params.get("id"));
+    public Result<Void> delete(@Valid @RequestBody IdVO vo) {
+        articleService.delete(vo.getId());
         return Result.success();
     }
 
     @PostMapping("/top")
-    public Result<Void> toggleTop(@RequestBody Map<String, Long> params) {
-        articleService.toggleTop(params.get("id"));
+    public Result<Void> toggleTop(@Valid @RequestBody IdVO vo) {
+        articleService.toggleTop(vo.getId());
         return Result.success();
     }
 }

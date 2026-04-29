@@ -35,8 +35,8 @@ const total = ref(0)
 
 const loadComments = async () => {
   const data = await getAdminCommentList({ pageNum: pageNum.value, pageSize: 10 })
-  comments.value = data
-  total.value = data.length
+  comments.value = data.records
+  total.value = data.total
 }
 
 const handleDelete = async (id) => {

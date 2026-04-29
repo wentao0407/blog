@@ -1,12 +1,12 @@
 package com.hu.blog.controller.admin;
 
 import com.hu.blog.common.Result;
-import com.hu.blog.dto.CommentDTO;
 import com.hu.blog.service.CommentService;
+import com.hu.blog.vo.IdVO;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,7 +22,7 @@ public class AdminCommentController {
      * 分页查询评论列表
      */
     @PostMapping("/list")
-    public Result<List<CommentDTO>> list(@RequestBody Map<String, Object> params) {
+    public Result<Map<String, Object>> list(@RequestBody Map<String, Object> params) {
         Long articleId = params.get("articleId") != null ? Long.valueOf(params.get("articleId").toString()) : null;
         Integer pageNum = params.get("pageNum") != null ? Integer.valueOf(params.get("pageNum").toString()) : 1;
         Integer pageSize = params.get("pageSize") != null ? Integer.valueOf(params.get("pageSize").toString()) : 10;
@@ -33,8 +33,8 @@ public class AdminCommentController {
      * 删除评论
      */
     @PostMapping("/delete")
-    public Result<Void> delete(@RequestBody Map<String, Long> params) {
-        commentService.delete(params.get("id"));
+    public Result<Void> delete(@Valid @RequestBody IdVO vo) {
+        commentService.delete(vo.getId());
         return Result.success();
     }
 }
