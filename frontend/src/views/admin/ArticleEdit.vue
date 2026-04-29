@@ -13,7 +13,7 @@
           class="cover-uploader"
           :show-file-list="false"
           :before-upload="beforeCoverUpload"
-          :http-request="handleCoverUpload"
+          :http-request="handleCoverSelect"
         >
           <img v-if="form.coverImage" :src="form.coverImage" class="cover-preview" />
           <div v-else class="cover-placeholder">
@@ -23,6 +23,7 @@
         </el-upload>
         <el-button v-if="form.coverImage" size="small" type="danger" text @click="form.coverImage = ''" style="margin-top: 8px;">移除</el-button>
       </el-form-item>
+      <CoverCropper v-model="cropperVisible" :file="cropperFile" @crop="handleCropConfirm" />
       <el-form-item label="分类">
         <el-select v-model="form.categoryId" placeholder="选择分类">
           <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
@@ -54,6 +55,7 @@ import { getTagList } from '../../api/tag'
 import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import MarkdownEditor from '../../components/MarkdownEditor.vue'
+import CoverCropper from '../../components/CoverCropper.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -65,6 +67,8 @@ const form = ref({
 })
 const categories = ref([])
 const tags = ref([])
+const cropperVisible = ref(false)
+const cropperFile = ref(null)
 
 const handleSubmit = async (status) => {
   if (!form.value.title) return ElMessage.warning('请输入标题')
@@ -82,9 +86,14 @@ const beforeCoverUpload = (file) => {
   return isImage && isLt5M
 }
 
-const handleCoverUpload = async (options) => {
+const handleCoverSelect = (options) => {
+  cropperFile.value = options.file
+  cropperVisible.value = true
+}
+
+const handleCropConfirm = async (croppedFile) => {
   try {
-    const data = await uploadImage(options.file)
+    const data = await uploadImage(croppedFile)
     form.value.coverImage = data.url
     ElMessage.success('封面图上传成功')
   } catch (e) {
