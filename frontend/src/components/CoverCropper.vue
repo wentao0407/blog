@@ -13,7 +13,6 @@
 <script setup>
 import { ref, watch, nextTick } from 'vue'
 import Cropper from 'cropperjs'
-import 'cropperjs/dist/cropper.css'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -38,39 +37,26 @@ watch(() => props.modelValue, async (val) => {
 watch(visible, (val) => {
   emit('update:modelValue', val)
   if (!val && cropper) {
-    cropper.destroy()
+    cropper.$destroy()
     cropper = null
   }
 })
 
 const initCropper = () => {
-  if (cropper) cropper.destroy()
+  if (cropper) cropper.$destroy()
   cropper = new Cropper(imgRef.value, {
     aspectRatio: 16 / 9,
     viewMode: 1,
     dragMode: 'move',
     autoCropArea: 0.9,
     responsive: true,
-    background: false,
-    ready() {
-      // 图片太小时，用白色补齐
-      const canvasData = cropper.getCanvasData()
-      const containerData = cropper.getContainerData()
-      if (canvasData.width < containerData.width || canvasData.height < containerData.height) {
-        cropper.setCanvasData({
-          left: Math.max(0, (containerData.width - canvasData.width) / 2),
-          top: Math.max(0, (containerData.height - canvasData.height) / 2),
-          width: canvasData.width,
-          height: canvasData.height
-        })
-      }
-    }
+    background: false
   })
 }
 
 const handleClose = () => {
   if (cropper) {
-    cropper.destroy()
+    cropper.$destroy()
     cropper = null
   }
   if (imgSrc.value) {
@@ -79,21 +65,22 @@ const handleClose = () => {
   }
 }
 
-const handleConfirm = () => {
+const handleConfirm = async () => {
   if (!cropper) return
-  // 输出裁剪后的 canvas，小图自动白色填充
-  const canvas = cropper.getCroppedCanvas({
-    width: 800,
-    height: 450,
-    fillColor: '#ffffff',
-    imageSmoothingEnabled: true,
-    imageSmoothingQuality: 'high'
-  })
-  canvas.toBlob((blob) => {
-    const croppedFile = new File([blob], props.file.name, { type: 'image/jpeg' })
-    emit('crop', croppedFile)
-    visible.value = false
-  }, 'image/jpeg', 0.9)
+  try {
+    // cropperjs v2 使用 $toCanvas 方法
+    const canvas = await cropper.$toCanvas({
+      width: 800,
+      height: 450
+    })
+    canvas.toBlob((blob) => {
+      const croppedFile = new File([blob], props.file.name, { type: 'image/jpeg' })
+      emit('crop', croppedFile)
+      visible.value = false
+    }, 'image/jpeg', 0.9)
+  } catch (e) {
+    console.error('裁剪失败:', e)
+  }
 }
 </script>
 

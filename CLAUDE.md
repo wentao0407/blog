@@ -1,5 +1,5 @@
 # Claude 项目开发准则（自动全局加载）
-适用于 JDK17 + SpringBoot3 + Vue3 + MySQL + Redis 项目
+适用于 JDK17 + SpringBoot3 + MySQL + Redis + Element Plus + Vue3 项目
 准则优先级：严谨 > 简洁 > 速度
 
 ================================================================================
